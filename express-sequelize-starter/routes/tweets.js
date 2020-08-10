@@ -2,17 +2,16 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db/models");
 const { Tweet } = db;
-const { check, validationResult } = require("express-validator");;
+const { asyncHandler, handleValidationErrors } = require("../utils.js")
+const { check, validationResult } = require("express-validator");
 
-const asyncHandler = (handler) => {
-    return (req, res, next) => {
-        return handler(req, res, next).catch(next)
-    }};
+
+
 
 router.get("/", asyncHandler(async (req, res) => {
         const tweets = await Tweet.findAll();
         res.json({tweets});
-    }) 
+    })
 );
 const validateTask = [
     check("message")
@@ -23,21 +22,7 @@ const validateTask = [
         .withMessage("Tweet must be less than 280 charachters")
 ]
 
-const handleValidationErrors = (req, res, next) => {
-    const validationErrors = validationResult(req);
-    console.log(validationErrors);
-    console.log(req.body);
-    if (!validationErrors.isEmpty()) {
-      const errors = validationErrors.array().map((error) => error.msg);
-  
-      const err = new Error("Bad request.");
-      err.errors = errors;
-      err.status = 400;
-      err.title = "Bad request.";
-      return next(err);
-    }
-    next();
-  };
+
 
 const tweetNotFoundError = (id) => {
     const err = Error(`Tweet with id of ${id} could not be found.`);
@@ -57,9 +42,9 @@ router.get("/:id(\\d+)", asyncHandler(async (req, res) => {
     })
 );
 
-router.post("/", 
+router.post("/",
     validateTask,
-    handleValidationErrors, 
+    handleValidationErrors,
     asyncHandler( async (req, res) => {
         console.log(req.body);
         const { message } = req.body ;
@@ -68,7 +53,7 @@ router.post("/",
     })
 )
 
-router.put("/:id(\\d+)", 
+router.put("/:id(\\d+)",
     validateTask,
     handleValidationErrors,
     asyncHandler(async (req, res, next) => {
@@ -77,7 +62,7 @@ router.put("/:id(\\d+)",
         if(tweet) {
            const updated = await tweet.update({ message: req.body.message});
            res.json(updated);
-           
+
         } else {
             next(tweetNotFoundError(tweetId));
         }
@@ -88,13 +73,13 @@ router.delete(
     "/:id(\\d+)",
     asyncHandler(async (req, res, next) => {
         const tweetId = Number(req.params.id);
-        const tweet = await Tweet.findByPk(tweetId); 
+        const tweet = await Tweet.findByPk(tweetId);
         if (tweet) {
             await tweet.destroy();
             res.status(204).end()
         } else {
             next(tweetNotFoundError(tweetId));
-        }   
+        }
     })
 )
 

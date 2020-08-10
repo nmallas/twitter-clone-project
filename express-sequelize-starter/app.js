@@ -6,6 +6,7 @@ const cors = require("cors");
 
 const indexRouter = require("./routes/index.js");
 const tweetsRouter = require("./routes/tweets.js");
+const usersRouter = require("./routes/users.js");
 
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(cors({ origin: "http://localhost:4000" }));
 
 app.use("/", indexRouter);
 app.use("/tweets", tweetsRouter);
+app.use("/users", usersRouter);
 
 
 
