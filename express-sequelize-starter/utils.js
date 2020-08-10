@@ -1,3 +1,5 @@
+const { check, validationResult } = require("express-validator");
+
 const asyncHandler = (handler) => {
     return function (req, res, next) {
         return handler(req, res, next).catch(next)
